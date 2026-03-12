@@ -13,7 +13,7 @@
       "name": "apiregen",
       "source": "./",
       "description": "Capture web traffic, analyze APIs with Claude, generate typed clients. 7 slash commands, 16 MCP tools.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "license": "MIT",
       "keywords": [
         "api",
