@@ -1,28 +1,28 @@
 [project]
 name = "apiregen"
-version = "0.1.0"
+version = "0.2.0"
 description = "Interactive API reverse engineering toolkit"
 requires-python = ">=3.11"
 dependencies = [
-    "camoufox[geoip]",
-    "click",
     "mcp>=1.26.0",
-    "rich",
 ]
 
 [project.scripts]
 apiregen = "apiregen.cli:cli"
 apiregen-mcp = "apiregen.mcp_server:main"
 
+[project.optional-dependencies]
+cli = ["click", "rich"]
+browser = ["camoufox[geoip]"]
+mitmproxy = ["mitmproxy"]
+all = ["apiregen[cli,browser,mitmproxy]"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[project.optional-dependencies]
-mitmproxy = ["mitmproxy"]
-
 [dependency-groups]
-dev = ["pytest"]
+dev = ["pytest", "apiregen[cli]"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/apiregen"]

@@ -1,6 +1,6 @@
 {
   "name": "apiregen",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "API reverse engineering toolkit - capture web traffic as HAR files, analyze endpoints with Claude, and generate typed clients via QuickType. 7 slash commands, 16 MCP tools.",
   "author": {
     "name": "livedge"
