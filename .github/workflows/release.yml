@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify plugin.json version matches tag
+        run: |
+          plugin_version=$(python3 -c "import json; print(json.load(open('plugin.json'))['version'])")
+          tag_version="${{ steps.version.outputs.version }}"
+          if [ "$plugin_version" != "$tag_version" ]; then
+            echo "Version mismatch: plugin.json=$plugin_version tag=$tag_version"
+            exit 1
+          fi
+          echo "Version: $tag_version"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          cat <<'EOF' > notes.md
+          ## Install
+
+          ```
+          claude plugin add livedge/apiregen
+          ```
+
+          ## What's included
+
+          ### Slash commands
+          | Command | Description |
+          |---------|-------------|
+          | `/capture` | Guide through capturing web traffic as HAR files |
+          | `/recon` | Analyze captured traffic — build Page Context Document |
+          | `/mapping` | Cross-session differential analysis |
+          | `/report` | Full API Intelligence Report |
+          | `/schema` | Infer JSON schema from endpoints |
+          | `/typegen` | Generate typed classes via QuickType |
+          | `/investigate` | Ad-hoc deep-dive into endpoints |
+
+          ### MCP server
+          - `apiregen-har` — 16 tools for loading, searching, filtering, and analyzing HAR traffic data
+
+          ### CLI
+          - `apiregen start` — guided interactive workflow
+          - `apiregen capture` — capture traffic (Camoufox browser or mitmproxy)
+          - `apiregen recon` — raw traffic summary
+          EOF
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: notes.md
+          generate_release_notes: true

@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-plugin:
+    name: Validate plugin structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check plugin.json exists
+        run: test -f plugin.json
+
+      - name: Validate plugin.json
+        run: |
+          python3 -c "
+          import json, sys
+          with open('plugin.json') as f:
+              p = json.load(f)
+          required = ['name', 'version', 'description']
+          missing = [k for k in required if k not in p]
+          if missing:
+              print(f'Missing required fields: {missing}')
+              sys.exit(1)
+          print(f'Plugin: {p[\"name\"]} v{p[\"version\"]}')
+          print(f'Description: {p[\"description\"]}')
+          "
+
+      - name: Validate .mcp.json
+        run: |
+          python3 -c "
+          import json
+          with open('.mcp.json') as f:
+              m = json.load(f)
+          servers = m.get('mcpServers', {})
+          print(f'MCP servers: {list(servers.keys())}')
+          for name, cfg in servers.items():
+              assert 'command' in cfg, f'{name} missing command'
+              assert 'args' in cfg, f'{name} missing args'
+              print(f'  {name}: {cfg[\"command\"]} {\" \".join(cfg[\"args\"])}')
+          "
+
+      - name: Check slash commands exist
+        run: |
+          echo "Slash commands:"
+          for f in .claude/commands/*.md; do
+            name=$(basename "$f" .md)
+            echo "  /$name"
+          done
+          test -f .claude/commands/capture.md
+          test -f .claude/commands/recon.md
+          test -f .claude/commands/mapping.md
+          test -f .claude/commands/report.md
+          test -f .claude/commands/schema.md
+          test -f .claude/commands/typegen.md
+          test -f .claude/commands/investigate.md
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Run tests
+        run: uv run pytest -v
+
+  syntax-check:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check all Python files parse
+        run: |
+          find src -name '*.py' | while read f; do
+            python3 -c "import ast; ast.parse(open('$f').read())" || exit 1
+            echo "  OK: $f"
+          done
