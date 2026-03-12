@@ -1,0 +1,19 @@
+{
+  "name": "apiregen",
+  "version": "0.1.0",
+  "description": "API reverse engineering toolkit - capture web traffic as HAR files, analyze endpoints with Claude, and generate typed clients via QuickType. 7 slash commands, 16 MCP tools.",
+  "author": {
+    "name": "livedge"
+  },
+  "repository": "https://github.com/livedge/apiregen",
+  "license": "MIT",
+  "keywords": [
+    "api",
+    "reverse-engineering",
+    "har",
+    "traffic-analysis",
+    "code-generation",
+    "mcp",
+    "quicktype"
+  ]
+}

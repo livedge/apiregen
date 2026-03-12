@@ -1,0 +1,28 @@
+{
+  "name": "apiregen",
+  "owner": {
+    "name": "livedge",
+    "url": "https://github.com/livedge"
+  },
+  "metadata": {
+    "description": "API reverse engineering toolkit for Claude Code",
+    "repository": "https://github.com/livedge/apiregen"
+  },
+  "plugins": [
+    {
+      "name": "apiregen",
+      "source": "./",
+      "description": "Capture web traffic, analyze APIs with Claude, generate typed clients. 7 slash commands, 16 MCP tools.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "keywords": [
+        "api",
+        "reverse-engineering",
+        "har",
+        "traffic-analysis",
+        "code-generation",
+        "mcp"
+      ]
+    }
+  ]
+}
