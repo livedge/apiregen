@@ -1,0 +1,7 @@
+{
+  "name": "apiregen",
+  "version": "0.1.0",
+  "description": "API reverse engineering toolkit - capture web traffic, analyze endpoints, and generate typed clients",
+  "commands": ".claude/commands",
+  "mcpServers": ".mcp.json"
+}

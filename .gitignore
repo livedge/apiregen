@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+uv.lock
+.claude/settings.local.json
+
+# Test/example projects
+nike.sk/
+myproject/
+test-project/
+captures/
