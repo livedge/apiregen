@@ -98,9 +98,9 @@ def mcp(project_dir: str | None, port: int | None):
 @cli.command()
 @click.argument("project_dir", type=click.Path(exists=True))
 def recon(project_dir: str):
-    """Analyze all captures in a project and produce a recon report."""
+    """Show raw traffic summary for a project's captures."""
     from apiregen.har import parse_har
-    from apiregen.recon import analyze
+    from apiregen.recon import summarize
     from apiregen.rendering.recon import render_recon_result
 
     project_path = Path(project_dir)
@@ -119,8 +119,8 @@ def recon(project_dir: str):
         all_entries.extend(entries)
         console.print(f"    {len(entries)} entries")
 
-    console.print(f"\nTotal entries: [cyan]{len(all_entries)}[/cyan]")
     console.print()
-
-    result = analyze(all_entries)
+    result = summarize(all_entries)
     render_recon_result(console, result)
+    console.print()
+    console.print("[dim]For full analysis, use /recon in Claude Code.[/dim]")

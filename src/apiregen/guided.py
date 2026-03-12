@@ -13,7 +13,7 @@ from rich.prompt import Confirm, Prompt
 
 from apiregen.har import parse_har
 from apiregen.project import find_captures, init_project
-from apiregen.recon import analyze
+from apiregen.recon import summarize
 from apiregen.rendering.recon import render_recon_result
 
 console = Console(highlight=False)
@@ -169,16 +169,16 @@ def _verify_capture(har_path: Path) -> list:
 
 
 def _step_analyze(project_dir: Path) -> None:
-    """Run recon analysis on all captures."""
+    """Show raw traffic summary for all captures."""
     console.print()
-    console.print(Panel("[bold]Step 3 - Analysis[/bold]", style="cyan"))
+    console.print(Panel("[bold]Step 3 - Summary[/bold]", style="cyan"))
 
     har_files = find_captures(project_dir)
     if not har_files:
-        console.print("[red]No captures found. Cannot analyze.[/red]")
+        console.print("[red]No captures found. Cannot summarize.[/red]")
         return
 
-    console.print(f"Analyzing [cyan]{len(har_files)}[/cyan] capture(s)...")
+    console.print(f"Summarizing [cyan]{len(har_files)}[/cyan] capture(s)...")
 
     all_entries = []
     for har_file in har_files:
@@ -187,7 +187,7 @@ def _step_analyze(project_dir: Path) -> None:
         console.print(f"  [dim]{har_file.name}[/dim] - {len(entries)} entries")
 
     console.print()
-    result = analyze(all_entries)
+    result = summarize(all_entries)
     render_recon_result(console, result)
 
     # Show data interest reminder
@@ -195,14 +195,12 @@ def _step_analyze(project_dir: Path) -> None:
     config = json.loads(config_path.read_text())
     data_interest = config.get("data_interest", "")
     if data_interest:
-        api_domains = [d for d in result.domains if d.category == "api"]
         console.print()
         console.print(
             Panel(
                 f"You're looking for: [bold]{data_interest}[/bold]\n\n"
-                f"API domains found: [bold]{', '.join(d.domain for d in api_domains) or 'none'}[/bold]\n\n"
-                "Check if the data you need is served by one of these API domains.\n"
-                "If not, consider capturing more pages that display that data.",
+                "Use [bold]/recon[/bold] in Claude Code for intelligent analysis\n"
+                "of these domains and their relevance to your data.",
                 title="Data of interest",
                 border_style="green",
             )
