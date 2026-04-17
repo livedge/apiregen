@@ -16,18 +16,22 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
 from apiregen.mcp import HarStore, register_tools
+from apiregen.mcp.quicktype import register_quicktype_tools
 
 mcp = FastMCP(
     "apiregen-har",
     instructions=(
         "Investigate HTTP traffic from HAR captures. "
         "Load HAR files first with load_har, then use other tools to "
-        "search, filter, and analyze the recorded traffic."
+        "search, filter, and analyze the recorded traffic. "
+        "Use quicktype and quicktype_schema to generate typed code or "
+        "JSON schemas from JSON samples."
     ),
 )
 
 store = HarStore()
 register_tools(mcp, store)
+register_quicktype_tools(mcp)
 
 
 def main() -> None:

@@ -1,6 +1,6 @@
 ---
 description: "Phase 1 — RECON: Analyze captured traffic to build a comprehensive context profile of the target site."
-allowed-tools: mcp__apiregen-har__load_har, mcp__apiregen-har__har_overview, mcp__apiregen-har__har_domains, mcp__apiregen-har__har_endpoints, mcp__apiregen-har__har_search_headers, mcp__apiregen-har__har_search_bodies, mcp__apiregen-har__har_cookies, mcp__apiregen-har__har_get_entry, mcp__apiregen-har__har_get_response_body, mcp__apiregen-har__har_clear
+allowed-tools: mcp__apiregen-har__load_har, mcp__apiregen-har__har_overview, mcp__apiregen-har__har_domains, mcp__apiregen-har__har_endpoints, mcp__apiregen-har__har_search_headers, mcp__apiregen-har__har_search_bodies, mcp__apiregen-har__har_cookies, mcp__apiregen-har__har_get_entry, mcp__apiregen-har__har_get_response_body, mcp__apiregen-har__har_clear, WebSearch, WebFetch
 ---
 
 # Phase 1 — RECON
@@ -112,9 +112,27 @@ Table of every domain contacted, classified by category, with request counts.
 ### 7. Frontend Stack
 - Framework, HTTP client, state management hints
 
-### 8. Recommended Next Steps
+### 8. Open Source Intelligence
+
+Before finalizing, search the web and any available source code for additional context about the target's API:
+
+1. **Web search** for the target domain + "API", "GraphQL", "websocket", "developer docs", "swagger", "openapi"
+2. **Web search** for the target + "reverse engineer", "scraping", "bot", "unofficial API"
+3. **GitHub search** for repositories mentioning the target domain or API
+4. **Check** for official API documentation, developer portals, or partner APIs
+5. **Look for** blog posts, forum threads, or open-source projects that have already reverse-engineered parts of this API
+
+Document any findings:
+- Official or unofficial API documentation
+- Known rate limits or anti-bot measures reported by others
+- Open-source clients or libraries for this API
+- Developer community discussions about the API
+- Any GraphQL schema dumps, introspection results, or Postman collections shared publicly
+
+### 9. Recommended Next Steps
 - Which endpoints to focus on in Phase 2 (Mapping)
 - Whether additional captures are needed
+- Whether source analysis (`/graphql-reverse`) would be valuable
 - Any early warnings about feasibility
 
-Format the document clearly with markdown headers and tables. This document will be referenced in all subsequent phases.
+Format the document clearly with markdown headers and tables. Save the document to `.apiregen/reports/page-context.md`. This document will be referenced in all subsequent phases.

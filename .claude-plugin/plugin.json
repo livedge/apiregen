@@ -1,7 +1,7 @@
 {
   "name": "apiregen",
-  "version": "0.2.0",
-  "description": "API reverse engineering toolkit - capture web traffic as HAR files, analyze endpoints with Claude, and generate typed clients via QuickType. 7 slash commands, 16 MCP tools.",
+  "version": "0.3.0",
+  "description": "API reverse engineering toolkit - capture traffic, analyze endpoints, reverse engineer GraphQL/REST/WebSocket APIs. 9 slash commands, 16 MCP tools, 3 expert agents.",
   "author": {
     "name": "livedge"
   },
@@ -12,10 +12,16 @@
     "reverse-engineering",
     "har",
     "traffic-analysis",
-    "code-generation",
-    "mcp",
-    "quicktype"
+    "graphql",
+    "rest",
+    "websocket",
+    "mcp"
   ],
   "commands": "./.claude/commands",
+  "agents": [
+    "./.claude/agents/graphql-specialist.md",
+    "./.claude/agents/rest-api-specialist.md",
+    "./.claude/agents/websocket-specialist.md"
+  ],
   "mcpServers": "./.mcp.json"
 }
