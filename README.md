@@ -33,18 +33,19 @@ Open Claude Code in any project directory and use the slash commands.
 | `/report` | Phase 3 — full API intelligence report |
 | `/schema` | Infer JSON response schema for specific endpoints |
 | `/typegen` | Phase 4 — generate typed classes (TypeScript, C#, Python, etc.) |
-| `/graphql-reverse` | Reconstruct GraphQL schemas, operations, and fragments |
 | `/investigate` | Ad-hoc deep-dive into specific endpoints |
 
-### Specialist agents
+### Specialist agents (auto-triggered)
 
-Claude delegates automatically to a focused agent when the target API style is clear:
+`/recon` automatically dispatches these agents when specific signals are detected — no extra command needed:
 
-| Agent | When it's used |
-|-------|---------------|
-| `rest-api-specialist` | REST endpoints — resources, pagination, auth; produces OpenAPI-style specs |
-| `graphql-specialist` | GraphQL endpoints — extracts operations, rebuilds schemas, maps fragments |
-| `websocket-specialist` | Real-time protocols — graphql-ws, socket.io, SignalR, custom binary frames |
+| Agent | Auto-triggers on |
+|-------|-----------------|
+| `rest-api-specialist` | Versioned REST paths (`/api/v1/`), `{data, meta}` envelopes, offset/limit/cursor pagination, Bearer/API-key auth, axios/fetch/Retrofit/OkHttp client signatures |
+| `graphql-specialist` | `/graphql` endpoints with `{query, variables}` bodies, GraphQL AST literals in JS bundles, persisted queries (`documentId`, `sha256Hash`), Apollo/Relay/urql client imports |
+| `websocket-specialist` | WebSocket upgrade handshakes, `ws://`/`wss://` URLs, graphql-ws / socket.io / SignalR / STOMP / MQTT subprotocols, binary frames (Protobuf/MessagePack), live/real-time data |
+
+Multiple specialists can apply to the same target (e.g., REST for data + WebSocket for live updates).
 
 ### Typical workflow
 
@@ -114,7 +115,7 @@ src/apiregen/
     └── recon.py            # Rich-based CLI output for recon
 
 .claude/
-├── commands/               # 8 slash commands (.md)
+├── commands/               # 7 slash commands (.md)
 └── agents/                 # 3 specialist agents (.md)
 
 .claude-plugin/

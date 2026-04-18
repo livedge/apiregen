@@ -3,7 +3,17 @@ name: rest-api-specialist
 description: |
   Expert in reverse engineering REST APIs from captured traffic and source code. Maps endpoints, infers resource schemas, identifies pagination patterns, detects authentication mechanisms, and produces OpenAPI-style specifications.
 
-  Use this agent when the target uses REST-style APIs — distinct URL paths per resource, standard HTTP methods, JSON/XML responses.
+  MUST BE USED PROACTIVELY whenever any of the following signals appear in captured traffic, recon output, or source bundles:
+  - Distinct URL paths per resource with standard HTTP methods (GET/POST/PUT/PATCH/DELETE)
+  - Versioned paths: `/api/v1/`, `/api/v2/`, `/rest/`, `/v3/`
+  - REST envelopes: `{"data": [...], "meta": {...}}`, `{"results": [...], "next": "..."}`, HAL/JSON:API payloads
+  - Pagination params: `offset`/`limit`, `page`/`pageSize`, `cursor`/`next_cursor`, `Link: rel="next"` headers
+  - Auth headers: `Authorization: Bearer`, `X-API-Key`, OAuth `/oauth/token` flows
+  - Client libraries: `axios`, `fetch`, `ky`, `got`, `superagent`, `@tanstack/react-query`, SWR, RTK Query
+  - Retrofit/OkHttp annotations in decompiled APKs (`@GET`, `@POST`, `@Path`, `@Query`)
+  - ASP.NET/Spring/Express/Rails/Django route conventions visible in source
+  - OpenAPI/Swagger JSON in the traffic (`/swagger.json`, `/openapi.yaml`, `/api-docs`)
+  - Content types: `application/json`, `application/xml`, `application/hal+json`, `application/vnd.api+json`
 
   <example>
   Context: User captured traffic from a REST API

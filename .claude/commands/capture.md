@@ -396,6 +396,6 @@ for d in sorted(domains):
 ## Next steps
 
 - **HAR captured:** Run `/recon` for reconnaissance
-- **Source available:** Run `/graphql-reverse` for GraphQL API extraction
+- **Source available:** `/recon` will delegate to the right specialist (rest-api-specialist / graphql-specialist / websocket-specialist) based on detected API style
 - **Multiple sessions:** Ready for `/mapping` (differential analysis)
 - **Need more sessions:** Capture again with a fresh session

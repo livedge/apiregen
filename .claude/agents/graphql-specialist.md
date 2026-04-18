@@ -3,7 +3,17 @@ name: graphql-specialist
 description: |
   Expert in reverse engineering GraphQL APIs from captured traffic and JavaScript source bundles. Reconstructs schemas, extracts operations, maps fragment dependency graphs, discovers hidden mutations/subscriptions, and identifies real-time WebSocket subscription protocols.
 
-  Use this agent when the target API uses GraphQL — single POST endpoint, query/mutation strings in request bodies, or AST objects in JS bundles.
+  MUST BE USED PROACTIVELY whenever any of the following signals appear in captured traffic, recon output, or source bundles:
+  - A single POST endpoint accepting `{"query": "...", "variables": {...}}` payloads — typically `/graphql`, `/_api/graphql`, `/api/graphql`, `/gql`
+  - Operation strings starting with `query `, `mutation `, or `subscription ` in request bodies
+  - GraphQL AST object literals in JS bundles: `kind:"Document"`, `kind:"OperationDefinition"`, `kind:"FragmentDefinition"`
+  - Custom headers: `x-operation-name`, `x-operation-type`, `x-apollo-operation-name`, `x-apollo-operation-id`
+  - Persisted queries: `documentId`, `sha256Hash`, `persistedQuery` fields in the request or query string
+  - Client libraries: `@apollo/client`, `apollo-boost`, `urql`, `relay-runtime`, `graphql-request`, `@tanstack/react-query` with gql
+  - Build-time codegen output: `graphql-codegen`, `relay-compiler`, `.graphql.ts` / `.gql.js` artifacts
+  - Response envelope: `{"data": {...}, "errors": [...]}` shape
+  - `__typename` fields appearing throughout response data
+  - WebSocket subprotocols: `graphql-ws`, `graphql-transport-ws`, `subscriptions-transport-ws` (coordinate with websocket-specialist)
 
   <example>
   Context: User captured traffic from a site that uses GraphQL

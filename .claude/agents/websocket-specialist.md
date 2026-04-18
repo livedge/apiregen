@@ -1,9 +1,18 @@
 ---
 name: websocket-specialist
 description: |
-  Expert in reverse engineering WebSocket-based APIs and real-time protocols. Identifies WS endpoints, decodes frame protocols (graphql-ws, socket.io, custom binary), maps subscription topics, and documents connection lifecycle.
+  Expert in reverse engineering WebSocket-based APIs and real-time protocols. Identifies WS endpoints, decodes frame protocols (graphql-ws, socket.io, SignalR, STOMP, MQTT, custom binary), maps subscription topics, and documents connection lifecycle.
 
-  Use this agent when the target uses WebSocket connections for real-time data — live updates, streaming feeds, push notifications, or bidirectional communication.
+  MUST BE USED PROACTIVELY whenever any of the following signals appear in captured traffic, recon output, or source bundles:
+  - HTTP upgrade handshake: `Upgrade: websocket`, `Sec-WebSocket-Key`, `Sec-WebSocket-Protocol`, `Sec-WebSocket-Version`
+  - URLs using `ws://` or `wss://` schemes, or paths like `/ws`, `/socket`, `/realtime`, `/stream`, `/live`, `/hub`
+  - Client libraries in source: `WebSocket(`, `new WebSocket`, `socket.io-client`, `io(`, `@microsoft/signalr`, `HubConnection`, `stompjs`, `mqtt`, `centrifuge`, `pusher-js`, `ably`, `phoenix` (LiveView/Channels), `sockjs`
+  - Subprotocol strings: `graphql-ws`, `graphql-transport-ws`, `subscriptions-transport-ws`, `mqtt`, `v12.stomp`
+  - Message envelopes: `{"type":"connection_init"|"subscribe"|"next"|"complete"}` (graphql-ws), `{"type":1,"target":"..."}` (SignalR), socket.io packet codes (`0`,`40`,`42[...]`), STOMP `CONNECT`/`SUBSCRIBE`/`MESSAGE` frames
+  - Binary frame formats: Protobuf (`.proto` files, `@protobuf-ts/runtime`), MessagePack (`@msgpack/msgpack`, `msgpack-lite`), FlatBuffers, raw `ArrayBuffer`/`Blob` handling in WS listeners
+  - Server-Sent Events as real-time alternative: `text/event-stream` responses, `EventSource` in source
+  - Long-polling upgrade patterns: `/socket.io/?EIO=4&transport=polling`, SignalR `/hub/negotiate`
+  - User mentions live/real-time data: live odds, live scores, chat, notifications, streaming feeds, bidirectional communication
 
   <example>
   Context: User needs to understand the WebSocket layer of a sports betting site

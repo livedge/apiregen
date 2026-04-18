@@ -1,7 +1,7 @@
 {
   "name": "apiregen",
-  "version": "0.3.0",
-  "description": "API reverse engineering toolkit - capture traffic, analyze endpoints, reverse engineer GraphQL/REST/WebSocket APIs. 9 slash commands, 16 MCP tools, 3 expert agents.",
+  "version": "0.3.1",
+  "description": "API reverse engineering toolkit - capture traffic, analyze endpoints, reverse engineer REST/GraphQL/WebSocket APIs. 7 slash commands, 18 MCP tools, 3 auto-triggered specialist agents.",
   "author": {
     "name": "livedge"
   },

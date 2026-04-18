@@ -132,7 +132,17 @@ Document any findings:
 ### 9. Recommended Next Steps
 - Which endpoints to focus on in Phase 2 (Mapping)
 - Whether additional captures are needed
-- Whether source analysis (`/graphql-reverse`) would be valuable
+- Which specialist agent (rest-api-specialist, graphql-specialist, websocket-specialist) is best suited for the detected API style
 - Any early warnings about feasibility
 
 Format the document clearly with markdown headers and tables. Save the document to `.apiregen/reports/page-context.md`. This document will be referenced in all subsequent phases.
+
+## Auto-delegation to specialist agents
+
+After the Page Context Document is written, dispatch the appropriate specialist(s) via the Agent tool based on detected signals. Multiple specialists may apply to the same target:
+
+- **`rest-api-specialist`** — invoke when versioned REST paths (`/api/v1/`, `/rest/`), REST envelopes (`{data, meta}`), pagination params (offset/limit/cursor), Bearer/API-key auth, or REST client libraries (axios, fetch, Retrofit, OkHttp) are detected.
+- **`graphql-specialist`** — invoke when a `/graphql` endpoint accepting `{query, variables}`, GraphQL operation strings (`query`/`mutation`/`subscription`), AST literals in JS bundles, persisted-query fields (`documentId`, `sha256Hash`), or Apollo/Relay/urql client signatures are detected.
+- **`websocket-specialist`** — invoke when WebSocket upgrade handshakes, `ws://`/`wss://` URLs, graphql-ws / socket.io / SignalR / STOMP / MQTT signatures, binary frame handling (Protobuf/MessagePack), or real-time data (live odds, live scores, chat, streams) are detected.
+
+Pass each specialist the path to the saved Page Context Document and the relevant HAR path so it can continue from the recon findings without repeating discovery work.
