@@ -20,10 +20,10 @@ jobs:
 
       - name: Verify plugin.json version matches tag
         run: |
-          plugin_version=$(python3 -c "import json; print(json.load(open('plugin.json'))['version'])")
+          plugin_version=$(python3 -c "import json; print(json.load(open('.claude-plugin/plugin.json'))['version'])")
           tag_version="${{ steps.version.outputs.version }}"
           if [ "$plugin_version" != "$tag_version" ]; then
-            echo "Version mismatch: plugin.json=$plugin_version tag=$tag_version"
+            echo "Version mismatch: .claude-plugin/plugin.json=$plugin_version tag=$tag_version"
             exit 1
           fi
           echo "Version: $tag_version"
@@ -35,7 +35,8 @@ jobs:
           ## Install
 
           ```
-          claude plugin add livedge/apiregen
+          claude plugin marketplace add livedge/apiregen
+          claude plugin install apiregen
           ```
 
           ## What's included
@@ -44,20 +45,29 @@ jobs:
           | Command | Description |
           |---------|-------------|
           | `/capture` | Guide through capturing web traffic as HAR files |
-          | `/recon` | Analyze captured traffic — build Page Context Document |
-          | `/mapping` | Cross-session differential analysis |
-          | `/report` | Full API Intelligence Report |
-          | `/schema` | Infer JSON schema from endpoints |
-          | `/typegen` | Generate typed classes via QuickType |
-          | `/investigate` | Ad-hoc deep-dive into endpoints |
+          | `/recon` | Phase 1 — analyze traffic, build Page Context Document, auto-dispatch specialists |
+          | `/mapping` | Phase 2 — cross-session differential analysis |
+          | `/report` | Phase 3 — full API Intelligence Report |
+          | `/schema` | Infer JSON response schema for specific endpoints |
+          | `/typegen` | Phase 4 — generate typed classes via QuickType |
+          | `/investigate` | Ad-hoc deep-dive into specific endpoints |
+
+          ### Specialist agents (auto-triggered by `/recon`)
+          - `rest-api-specialist` — REST endpoints, pagination, auth, OpenAPI specs
+          - `graphql-specialist` — GraphQL operations, fragments, schemas, hidden mutations/subscriptions
+          - `websocket-specialist` — graphql-ws, socket.io, SignalR, STOMP, MQTT, binary frames
 
           ### MCP server
-          - `apiregen-har` — 16 tools for loading, searching, filtering, and analyzing HAR traffic data
+          - `apiregen-har` — 18 tools for loading, searching, filtering, and analyzing HAR traffic, plus QuickType-based type generation
 
           ### CLI
           - `apiregen start` — guided interactive workflow
+          - `apiregen init` — initialize `.apiregen/` project
           - `apiregen capture` — capture traffic (Camoufox browser or mitmproxy)
+          - `apiregen flows-to-har` — convert mitmproxy flows to HAR
+          - `apiregen extract-source` — pull HTML/JS from HAR
           - `apiregen recon` — raw traffic summary
+          - `apiregen mcp` — run MCP server standalone
           EOF
 
       - name: Create release
