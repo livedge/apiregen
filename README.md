@@ -2,7 +2,7 @@
 
 API reverse engineering toolkit for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-Capture web traffic as HAR files, then let Claude analyze the endpoints, classify domains, detect auth patterns, and generate typed client code.
+Capture web traffic as HAR files, then let Claude analyze the endpoints, classify domains, detect auth patterns, reverse engineer GraphQL/REST/WebSocket APIs, and generate typed client code.
 
 ## Prerequisites
 
@@ -21,24 +21,50 @@ Restart Claude Code. Done.
 
 ## Usage
 
-Open Claude Code in any project directory and use the slash commands:
+Open Claude Code in any project directory and use the slash commands.
+
+### Slash commands
 
 | Command | What it does |
 |---------|-------------|
 | `/capture` | Walks you through capturing web traffic as HAR files |
-| `/recon` | Analyze captured traffic — domains, auth, protection, stack |
-| `/mapping` | Cross-session differential analysis |
-| `/report` | Full API intelligence report |
-| `/schema` | Infer JSON schema from endpoints |
-| `/typegen` | Generate typed classes (TypeScript, C#, Python, etc.) |
+| `/recon` | Phase 1 — analyze traffic: domains, auth, protection, stack |
+| `/mapping` | Phase 2 — cross-session differential analysis |
+| `/report` | Phase 3 — full API intelligence report |
+| `/schema` | Infer JSON response schema for specific endpoints |
+| `/typegen` | Phase 4 — generate typed classes (TypeScript, C#, Python, etc.) |
+| `/graphql-reverse` | Reconstruct GraphQL schemas, operations, and fragments |
 | `/investigate` | Ad-hoc deep-dive into specific endpoints |
+
+### Specialist agents
+
+Claude delegates automatically to a focused agent when the target API style is clear:
+
+| Agent | When it's used |
+|-------|---------------|
+| `rest-api-specialist` | REST endpoints — resources, pagination, auth; produces OpenAPI-style specs |
+| `graphql-specialist` | GraphQL endpoints — extracts operations, rebuilds schemas, maps fragments |
+| `websocket-specialist` | Real-time protocols — graphql-ws, socket.io, SignalR, custom binary frames |
 
 ### Typical workflow
 
 1. `/capture` — capture traffic from target site (browser DevTools, Camoufox, or mitmproxy)
 2. `/recon` — Claude analyzes the traffic and builds a context profile
-3. `/report` — Claude writes a complete API intelligence report
-4. `/typegen` — generate typed client code from discovered endpoints
+3. `/mapping` — repeat captures across sessions; Claude flags static vs dynamic patterns
+4. `/report` — Claude writes a complete API intelligence report
+5. `/typegen` — generate typed client code from discovered endpoints
+
+## MCP tools
+
+The plugin ships an MCP server (`apiregen-har`) with 18 tools Claude uses behind the scenes:
+
+**Loading & overview** — `load_har`, `har_clear`, `har_overview`, `har_domains`, `har_endpoints`
+**Inspection** — `har_get_entry`, `har_get_request_body`, `har_get_response_body`
+**Search** — `har_search`, `har_search_bodies`, `har_search_headers`
+**Analysis** — `har_cookies`, `har_timing`, `har_query_params`, `har_response_schema`, `har_compare_sessions`
+**Type generation** — `quicktype`, `quicktype_schema`
+
+All intelligent analysis (domain classification, auth detection, protection identification, endpoint semantics) is performed by Claude — the Python code only parses and queries.
 
 ## Standalone CLI (optional)
 
@@ -51,21 +77,74 @@ uv tool install apiregen[cli]
 # Guided interactive workflow
 apiregen start
 
-# Or individual commands
-apiregen init myproject
-apiregen capture -m browser -o myproject/captures/session1.har
-apiregen recon myproject
+# Individual commands
+apiregen init myproject                              # create .apiregen/ project
+apiregen capture -m browser                          # capture via Camoufox (stealth)
+apiregen capture -m mitmproxy                        # capture via mitmproxy
+apiregen flows-to-har session.flows                  # convert mitmproxy flows to HAR
+apiregen extract-source capture.har                  # pull HTML/JS from HAR
+apiregen recon myproject                             # raw traffic summary
+apiregen mcp myproject                               # run MCP server standalone
 ```
 
-Add browser capture support: `uv tool install apiregen[cli,browser]`
-
+Add browser capture: `uv tool install apiregen[cli,browser]`
 Add mitmproxy support: `uv tool install apiregen[cli,mitmproxy]`
+Everything: `uv tool install apiregen[all]`
 
-## How it works
+## Project structure
 
-The plugin provides an MCP server (`apiregen-har`) with 16 tools for loading, searching, and analyzing HAR files. The slash commands give Claude structured prompts to use these tools for deep API analysis.
+```
+src/apiregen/
+├── cli.py                  # Click CLI: start, init, capture, flows-to-har,
+│                           #   extract-source, mcp, recon
+├── guided.py               # Interactive guided workflow
+├── project.py              # .apiregen/ project discovery + init
+├── har.py                  # HAR parser, HarEntry dataclass
+├── recon.py                # Phase 1 recon — typed dataclass results
+├── mcp_server.py           # MCP server entry point
+├── capture/
+│   ├── browser.py          # Camoufox-backed capture + source extraction
+│   └── mitmproxy.py        # mitmproxy capture
+├── mcp/
+│   ├── store.py            # HarStore — encapsulated HAR state
+│   ├── helpers.py          # Pure helpers (truncate, infer_schema, ...)
+│   ├── tools.py            # 16 HAR investigation tools
+│   └── quicktype.py        # 2 QuickType bridge tools
+└── rendering/
+    └── recon.py            # Rich-based CLI output for recon
 
-All intelligent analysis (domain classification, auth detection, protection identification) is done by Claude — the Python code only handles data parsing and querying.
+.claude/
+├── commands/               # 8 slash commands (.md)
+└── agents/                 # 3 specialist agents (.md)
+
+.claude-plugin/
+├── plugin.json             # Plugin manifest
+└── marketplace.json        # Marketplace entry
+
+tests/                      # pytest scaffolding
+```
+
+An `.apiregen/` project directory contains:
+
+```
+.apiregen/
+├── project.json            # target url, type, metadata
+├── captures/               # HAR files, one per session
+└── source/                 # extracted HTML + JS bundles
+```
+
+## How analysis works
+
+The MCP server exposes the *data*; Claude provides the *intelligence*. A typical investigation loop:
+
+1. Claude calls `load_har` to ingest captures
+2. `har_overview` / `har_domains` reveal the API surface
+3. `har_endpoints` + `har_search` narrow to interesting calls
+4. `har_get_response_body` + `har_response_schema` sample payloads
+5. `har_compare_sessions` separates static config from per-session tokens
+6. `quicktype` turns approved samples into typed classes in the user's target language
+
+Supported QuickType languages: ruby, javascript, flow, rust, kotlin, dart, python, csharp, go, cpp, java, scala3, typescript, swift, objc, elm, schema, pike, haskell, php.
 
 ## License
 
