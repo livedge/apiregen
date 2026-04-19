@@ -1,7 +1,7 @@
 {
   "name": "apiregen",
-  "version": "0.3.1",
-  "description": "API reverse engineering toolkit - capture traffic, analyze endpoints, reverse engineer REST/GraphQL/WebSocket APIs. 7 slash commands, 18 MCP tools, 3 auto-triggered specialist agents.",
+  "version": "0.4.0",
+  "description": "API reverse engineering toolkit - capture traffic, analyze endpoints, reverse engineer REST/GraphQL/WebSocket APIs. 7 slash commands, 18 MCP tools, 4 auto-triggered specialist agents.",
   "author": {
     "name": "livedge"
   },
@@ -21,7 +21,8 @@
   "agents": [
     "./.claude/agents/graphql-specialist.md",
     "./.claude/agents/rest-api-specialist.md",
-    "./.claude/agents/websocket-specialist.md"
+    "./.claude/agents/websocket-specialist.md",
+    "./.claude/agents/binary-decoder-specialist.md"
   ],
   "mcpServers": "./.mcp.json"
 }

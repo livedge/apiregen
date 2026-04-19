@@ -44,8 +44,9 @@ Open Claude Code in any project directory and use the slash commands.
 | `rest-api-specialist` | Versioned REST paths (`/api/v1/`), `{data, meta}` envelopes, offset/limit/cursor pagination, Bearer/API-key auth, axios/fetch/Retrofit/OkHttp client signatures |
 | `graphql-specialist` | `/graphql` endpoints with `{query, variables}` bodies, GraphQL AST literals in JS bundles, persisted queries (`documentId`, `sha256Hash`), Apollo/Relay/urql client imports |
 | `websocket-specialist` | WebSocket upgrade handshakes, `ws://`/`wss://` URLs, graphql-ws / socket.io / SignalR / STOMP / MQTT subprotocols, binary frames (Protobuf/MessagePack), live/real-time data |
+| `binary-decoder-specialist` | `application/octet-stream` or `application/x-protobuf` bodies, `Content-Encoding: gzip`/`br`/`zstd`, magic-byte prefixes (`1f 8b`, zlib, zstd, Protobuf varints, MessagePack type bytes), base64/hex-looking JSON fields, `pako`/`@msgpack/msgpack`/`protobufjs`/`cbor-x` imports — probes candidate codecs against real samples and peels layered encodings |
 
-Multiple specialists can apply to the same target (e.g., REST for data + WebSocket for live updates).
+Multiple specialists can apply to the same target (e.g., REST for data + WebSocket for live updates + binary-decoder for compressed/encoded payloads).
 
 ### Typical workflow
 

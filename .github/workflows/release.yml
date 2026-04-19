@@ -56,6 +56,7 @@ jobs:
           - `rest-api-specialist` — REST endpoints, pagination, auth, OpenAPI specs
           - `graphql-specialist` — GraphQL operations, fragments, schemas, hidden mutations/subscriptions
           - `websocket-specialist` — graphql-ws, socket.io, SignalR, STOMP, MQTT, binary frames
+          - `binary-decoder-specialist` — probes opaque payloads against base64/gzip/brotli/zstd/MessagePack/CBOR/Protobuf/BSON, peels layered encodings, validates the decode
 
           ### MCP server
           - `apiregen-har` — 18 tools for loading, searching, filtering, and analyzing HAR traffic, plus QuickType-based type generation
