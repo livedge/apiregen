@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from os import PathLike
 from pathlib import Path
 
 APIREGEN_DIR = ".apiregen"
@@ -11,7 +12,11 @@ TARGET_TYPES = {
 }
 
 
-def init_project(path: str, target_type: str, target_url: str | None = None) -> Path:
+def init_project(
+    path: str | PathLike[str],
+    target_type: str,
+    target_url: str | None = None,
+) -> Path:
     """Create a new .apiregen project directory."""
     project_dir = Path(path) / APIREGEN_DIR
     if project_dir.exists():
@@ -31,7 +36,7 @@ def init_project(path: str, target_type: str, target_url: str | None = None) -> 
         (source_dir / "js").mkdir()
 
     config = {
-        "name": Path(path).name or path,
+        "name": Path(path).name or str(path),
         "created": datetime.now(timezone.utc).isoformat(),
         "target": {
             "type": target_type,

@@ -48,6 +48,7 @@ jobs:
           | `/recon` | Phase 1 — analyze traffic, build Page Context Document, auto-dispatch specialists |
           | `/mapping` | Phase 2 — cross-session differential analysis |
           | `/report` | Phase 3 — full API Intelligence Report |
+          | `/model` | Build clustered API model, coverage, OpenAPI, AsyncAPI, replay commands |
           | `/schema` | Infer JSON response schema for specific endpoints |
           | `/typegen` | Phase 4 — generate typed classes via QuickType |
           | `/investigate` | Ad-hoc deep-dive into specific endpoints |
@@ -59,7 +60,8 @@ jobs:
           - `binary-decoder-specialist` — probes opaque payloads against base64/gzip/brotli/zstd/MessagePack/CBOR/Protobuf/BSON, peels layered encodings, validates the decode
 
           ### MCP server
-          - `apiregen-har` — 18 tools for loading, searching, filtering, and analyzing HAR traffic, plus QuickType-based type generation
+          - `apiregen-har` — 26 tools for loading, searching, filtering, modeling, and analyzing HAR traffic, plus OpenAPI/AsyncAPI and QuickType-based type generation
+          - 8 specialist agents covering REST, GraphQL, WebSocket, binary codecs, gRPC-family transports, realtime frameworks, RPC-style transports, and native mobile transport stacks
 
           ### CLI
           - `apiregen start` — guided interactive workflow
@@ -67,6 +69,10 @@ jobs:
           - `apiregen capture` — capture traffic (Camoufox browser or mitmproxy)
           - `apiregen flows-to-har` — convert mitmproxy flows to HAR
           - `apiregen extract-source` — pull HTML/JS from HAR
+          - `apiregen model` — generate clustered API model
+          - `apiregen openapi` — generate OpenAPI 3.1 JSON
+          - `apiregen asyncapi` — generate AsyncAPI 3.0 JSON
+          - `apiregen replay` — generate redacted curl commands
           - `apiregen recon` — raw traffic summary
           - `apiregen mcp` — run MCP server standalone
           EOF

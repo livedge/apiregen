@@ -5,15 +5,15 @@
     "url": "https://github.com/livedge"
   },
   "metadata": {
-    "description": "API reverse engineering toolkit for Claude Code",
+    "description": "API reverse engineering toolkit for MCP-compatible AI assistants",
     "repository": "https://github.com/livedge/apiregen"
   },
   "plugins": [
     {
       "name": "apiregen",
       "source": "./",
-      "description": "Capture web traffic, analyze APIs with Claude, generate typed clients. 7 slash commands, 18 MCP tools, 3 auto-triggered specialist agents (REST, GraphQL, WebSocket).",
-      "version": "0.3.1",
+      "description": "Capture web traffic, model APIs with an AI assistant, generate OpenAPI/AsyncAPI specs and typed clients. 8 slash commands, 26 MCP tools, 8 auto-triggered specialist agents.",
+      "version": "0.4.0",
       "license": "MIT",
       "keywords": [
         "api",

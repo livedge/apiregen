@@ -44,7 +44,7 @@ Do NOT preset URL options in AskUserQuestion — just ask directly and wait for 
 
 Run init:
 ```bash
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen init <project-path> -t <web-desktop|web-mobile|apk> -u <url-or-package>
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen init <project-path> -t <web-desktop|web-mobile|apk> -u <url-or-package>
 ```
 
 If `.apiregen/config.json` already exists, read the target type from it to determine which capture flow to use — skip the questions.
@@ -77,7 +77,7 @@ HAR files recorded by **browsers** (Camoufox, DevTools) only capture the HTTP up
 ### Camoufox (HTTP only)
 
 ```bash
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture -m browser -o <project>/.apiregen/captures/<session>.har
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture -m browser -o <project>/.apiregen/captures/<session>.har
 ```
 
 - Launches anti-detection browser, records all traffic
@@ -93,13 +93,13 @@ mitmdump captures to a **flow stream file** which is written incrementally — n
 # 1. Pick an unused port (8080 may be blocked on Windows — try 9080 if so)
 
 # 2. Start mitmdump writing a flow stream (runs in background — safe to kill)
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen mitmdump \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} mitmdump \
   --listen-host 127.0.0.1 \
   --listen-port 9080 \
   -w "<project>/.apiregen/captures/<session>.flows"
 
 # 3. In another terminal, launch Camoufox through the proxy
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture \
   -m browser \
   --proxy http://127.0.0.1:9080 \
   -o <project>/.apiregen/captures/<session>-browser.har
@@ -109,7 +109,7 @@ uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen captu
 # 6. Stop mitmdump — any kill method works since the flow stream is always flushed.
 
 # 7. Convert the flow stream to HAR (includes WebSocket frames)
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen flows-to-har \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen flows-to-har \
   <project>/.apiregen/captures/<session>.flows
 # → writes <session>.har alongside the .flows file
 ```
@@ -137,7 +137,7 @@ Troubleshooting:
 ### mitmproxy only
 
 ```bash
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
 ```
 
 Configure browser proxy to `localhost:8080` manually. Trust the mitmproxy CA cert from `~/.mitmproxy/` (first run generates it).
@@ -162,7 +162,7 @@ Use AskUserQuestion:
 Camoufox captures with mobile viewport and User-Agent:
 
 ```bash
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture -m browser -o <project>/.apiregen/captures/<session>.har
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture -m browser -o <project>/.apiregen/captures/<session>.har
 ```
 
 Tell the user: after Camoufox opens, use the browser's responsive design mode (Ctrl+Shift+M in Firefox) to set a mobile viewport (e.g. iPhone 14: 390x844) and change User-Agent to a mobile string. Then browse the target site.
@@ -195,7 +195,7 @@ adb forward tcp:9222 localabstract:chrome_devtools_remote
 # 1. Start mitmproxy on host
 mitmproxy --listen-port 8080
 # Or for HAR output:
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
 
 # 2. Set device WiFi proxy to host IP:8080
 adb shell settings put global http_proxy <host-ip>:8080
@@ -300,7 +300,7 @@ adb shell "su -c 'chmod 644 /system/etc/security/cacerts/${HASH}.0'"
 adb shell settings put global http_proxy <host-ip>:8080
 
 # 9. Start mitmproxy
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
 
 # 10. Launch app with Frida SSL bypass
 frida -U -f <package-name> -l <project>/.apiregen/ssl-bypass.js
@@ -333,7 +333,7 @@ adb push ~/.mitmproxy/mitmproxy-ca-cert.cer /sdcard/Download/
 adb shell settings put global http_proxy <host-ip>:8080
 
 # 6. Start mitmproxy
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
+uv run --directory ${CLAUDE_PLUGIN_ROOT} apiregen capture -m mitmproxy -o <project>/.apiregen/captures/<session>.har
 
 # 7. Launch the patched app, then connect objection
 objection -g <package-name> explore
@@ -378,7 +378,7 @@ Each session should be a fresh app/browser session to get fresh tokens and cooki
 After capture, verify the HAR is usable:
 
 ```bash
-uv run --directory C:/OneDrive/Workspace/repos/libraries/ApiRegen python -c "
+uv run --directory ${CLAUDE_PLUGIN_ROOT} python -c "
 from apiregen.har import parse_har
 from pathlib import Path
 entries = parse_har(Path('<har-file-path>'), session='test')

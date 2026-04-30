@@ -1,7 +1,8 @@
 """Raw data aggregation for HAR entries — no classification, no heuristics.
 
 All intelligent analysis (domain classification, auth detection, protection
-identification, stack detection) is done by Claude through the slash commands.
+identification, stack detection) is done by the AI assistant through the slash
+commands or by an MCP client.
 This module only counts and groups.
 """
 

@@ -1,6 +1,6 @@
 """MCP tool registrations for HAR investigation.
 
-All 17 tools are registered via :func:`register_tools`, which captures the
+All HAR and API-model tools are registered via :func:`register_tools`, which captures the
 :class:`HarStore` instance in closures — no module-level global state.
 """
 
@@ -14,6 +14,14 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
+from apiregen.api_model import (
+    build_api_model,
+    endpoint_summary,
+    generate_asyncapi,
+    generate_openapi,
+    redact_model,
+    replay_curl,
+)
 from apiregen.har import HarEntry
 from apiregen.mcp.helpers import (
     domain_of,
@@ -803,6 +811,124 @@ def register_tools(mcp: FastMCP, store: HarStore) -> None:
                 "sample_count": len(samples),
                 "samples_from": sample_entries,
                 "schema": schema,
+            },
+            indent=2,
+        )
+
+    @mcp.tool()
+    def har_api_model(redact: bool = False) -> str:
+        """Cluster loaded HAR traffic into an API model.
+
+        The model normalizes endpoint paths, infers path/query parameters,
+        request/response schemas, token volatility, endpoint dependencies,
+        and coverage/confidence gaps. Set ``redact`` to mask sensitive
+        observed values before returning the model.
+        """
+        if err := store.ensure_loaded():
+            return err
+
+        model = build_api_model(store.entries)
+        if redact:
+            model = redact_model(model)
+        return json.dumps(model.to_dict(), indent=2)
+
+    @mcp.tool()
+    def har_redacted_api_model() -> str:
+        """Return the API model with sensitive values redacted."""
+        if err := store.ensure_loaded():
+            return err
+
+        model = redact_model(build_api_model(store.entries))
+        return json.dumps(model.to_dict(), indent=2)
+
+    @mcp.tool()
+    def har_openapi(title: str = "Reverse Engineered API", redact: bool = True) -> str:
+        """Generate an OpenAPI 3.1 document from observed HTTP endpoints."""
+        if err := store.ensure_loaded():
+            return err
+
+        model = build_api_model(store.entries)
+        if redact:
+            model = redact_model(model)
+        return json.dumps(generate_openapi(model, title=title), indent=2)
+
+    @mcp.tool()
+    def har_asyncapi(title: str = "Reverse Engineered Streaming API", redact: bool = True) -> str:
+        """Generate an AsyncAPI 3.0 document from observed WebSocket messages."""
+        if err := store.ensure_loaded():
+            return err
+
+        model = build_api_model(store.entries)
+        if redact:
+            model = redact_model(model)
+        return json.dumps(generate_asyncapi(model, title=title), indent=2)
+
+    @mcp.tool()
+    def har_coverage() -> str:
+        """Return per-endpoint sample counts, sessions, confidence, and gaps."""
+        if err := store.ensure_loaded():
+            return err
+
+        model = build_api_model(store.entries)
+        return json.dumps(
+            [
+                {
+                    "endpoint": endpoint.key,
+                    "domain": endpoint.domain,
+                    "coverage": endpoint.coverage.to_dict(),
+                }
+                for endpoint in model.endpoints
+            ],
+            indent=2,
+        )
+
+    @mcp.tool()
+    def har_dependencies() -> str:
+        """Return inferred endpoint dependencies from observed identifier flow."""
+        if err := store.ensure_loaded():
+            return err
+
+        model = build_api_model(store.entries)
+        return json.dumps(
+            [
+                {
+                    "endpoint": endpoint.key,
+                    "dependencies": [dependency.to_dict() for dependency in endpoint.dependencies],
+                }
+                for endpoint in model.endpoints
+                if endpoint.dependencies
+            ],
+            indent=2,
+        )
+
+    @mcp.tool()
+    def har_endpoint_summary() -> str:
+        """Return a compact endpoint summary for assistant planning."""
+        if err := store.ensure_loaded():
+            return err
+
+        return json.dumps(endpoint_summary(build_api_model(store.entries)), indent=2)
+
+    @mcp.tool()
+    def har_replay(index: int, redact: bool = True) -> str:
+        """Generate a replayable curl command for a captured request.
+
+        The command is redacted by default so auth headers, cookies, and
+        sensitive query parameters can be shared in reports safely.
+        """
+        if err := store.ensure_loaded():
+            return err
+        if index < 0 or index >= len(store.entries):
+            return f"Invalid index {index}. Valid range: 0-{len(store.entries) - 1}"
+
+        entry = store.entries[index]
+        return json.dumps(
+            {
+                "index": index,
+                "url": entry.url[:300],
+                "method": entry.method,
+                "redacted": redact,
+                "curl": replay_curl(entry, redact=redact),
             },
             indent=2,
         )

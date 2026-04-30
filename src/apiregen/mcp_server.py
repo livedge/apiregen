@@ -1,7 +1,7 @@
 """MCP server for deep investigation of HAR (HTTP Archive) captures.
 
 Exposes tools for loading, searching, filtering, and analyzing captured
-HTTP traffic.  Designed to be used from Claude Code or any MCP client.
+HTTP traffic. Designed to be used from any MCP-compatible client.
 
 Start with ``load_har`` to ingest HAR files, then use the other tools
 to explore domains, search bodies/headers, inspect individual entries,

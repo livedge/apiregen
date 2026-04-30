@@ -14,13 +14,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Check plugin.json exists
-        run: test -f plugin.json
+        run: test -f .claude-plugin/plugin.json
 
       - name: Validate plugin.json
         run: |
           python3 -c "
           import json, sys
-          with open('plugin.json') as f:
+          with open('.claude-plugin/plugin.json') as f:
               p = json.load(f)
           required = ['name', 'version', 'description']
           missing = [k for k in required if k not in p]
@@ -56,6 +56,7 @@ jobs:
           test -f .claude/commands/recon.md
           test -f .claude/commands/mapping.md
           test -f .claude/commands/report.md
+          test -f .claude/commands/model.md
           test -f .claude/commands/schema.md
           test -f .claude/commands/typegen.md
           test -f .claude/commands/investigate.md

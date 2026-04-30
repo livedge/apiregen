@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 
 from apiregen.har import parse_har
-from apiregen.project import find_captures, init_project
+from apiregen.project import TARGET_TYPES, find_captures, init_project
 from apiregen.recon import summarize
 from apiregen.rendering.recon import render_recon_result
 
@@ -29,11 +29,23 @@ def _step_init() -> Path:
 
     name = Prompt.ask("Project name (e.g. the site you're targeting)")
 
-    project_dir = Path(name)
-    if project_dir.exists() and (project_dir / "config.json").exists():
+    project_root = Path(name).resolve()
+    project_dir = project_root / ".apiregen"
+    config_path = project_dir / "config.json"
+
+    if config_path.exists():
         console.print(f"[yellow]Project '{name}' already exists - resuming.[/yellow]")
     else:
-        project_dir = init_project(name)
+        console.print()
+        for key, label in TARGET_TYPES.items():
+            console.print(f"  [cyan]{key}[/cyan] - {label}")
+        target_type = Prompt.ask(
+            "Target type",
+            choices=list(TARGET_TYPES.keys()),
+            default="web-desktop",
+        )
+        project_dir = init_project(project_root, target_type=target_type)
+        config_path = project_dir / "config.json"
         console.print(f"[green]Created project:[/green] {project_dir}")
 
     console.print()
@@ -42,10 +54,8 @@ def _step_init() -> Path:
         "What data are you interested in? (e.g. events, odds, prices, products)"
     )
 
-    # Save scoping info to config
-    config_path = project_dir / "config.json"
     config = json.loads(config_path.read_text())
-    config["target_url"] = target_url
+    config["target"]["url"] = target_url
     config["data_interest"] = data_interest
     config_path.write_text(json.dumps(config, indent=2))
 
@@ -199,7 +209,7 @@ def _step_analyze(project_dir: Path) -> None:
         console.print(
             Panel(
                 f"You're looking for: [bold]{data_interest}[/bold]\n\n"
-                "Use [bold]/recon[/bold] in Claude Code for intelligent analysis\n"
+                "Use [bold]/recon[/bold] in a supported AI assistant for deeper analysis\n"
                 "of these domains and their relevance to your data.",
                 title="Data of interest",
                 border_style="green",
@@ -295,7 +305,7 @@ def run_guided() -> None:
             f"Captures: [bold]{len(find_captures(project_dir))}[/bold] session(s)\n\n"
             "Next steps:\n"
             f"  [bold]apiregen recon {project_dir}[/bold] - re-run analysis\n"
-            "  [bold]/recon[/bold]    - detailed recon in Claude Code\n"
+            "  [bold]/recon[/bold]    - detailed recon in a supported AI assistant\n"
             "  [bold]/mapping[/bold]  - cross-session differential analysis\n"
             "  [bold]/report[/bold]   - full API intelligence report\n"
             "  [bold]/typegen[/bold]  - generate typed classes from endpoints",

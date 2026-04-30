@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -13,6 +14,31 @@ console = Console()
 @click.group()
 def cli():
     """API reverse engineering toolkit."""
+
+
+def _resolve_project_path(project_dir: str | None) -> Path:
+    if project_dir:
+        return Path(project_dir)
+    proj = find_project()
+    if proj:
+        return proj
+    console.print("[red]No .apiregen project found. Run 'apiregen init' first.[/red]")
+    raise SystemExit(1)
+
+
+def _load_project_entries(project_dir: str | None):
+    from apiregen.har import parse_har
+
+    project_path = _resolve_project_path(project_dir)
+    har_files = find_captures(project_path)
+    if not har_files:
+        console.print(f"[red]No .har files found in[/red] {project_path}/captures/")
+        raise SystemExit(1)
+
+    entries = []
+    for har_file in har_files:
+        entries.extend(parse_har(har_file, session=har_file.stem))
+    return entries
 
 
 @cli.command()
@@ -239,4 +265,73 @@ def recon(project_dir: str | None):
     result = summarize(all_entries)
     render_recon_result(console, result)
     console.print()
-    console.print("[dim]For full analysis, use /recon in Claude Code.[/dim]")
+    console.print("[dim]For full analysis, use /recon in a supported AI assistant.[/dim]")
+
+
+@cli.command("model")
+@click.argument("project_dir", type=click.Path(exists=True), required=False)
+@click.option("--no-redact", is_flag=True, default=False, help="Include observed sensitive values.")
+def model_cmd(project_dir: str | None, no_redact: bool):
+    """Generate the clustered API model from project captures."""
+    from apiregen.api_model import build_api_model, redact_model
+
+    model = build_api_model(_load_project_entries(project_dir))
+    if not no_redact:
+        model = redact_model(model)
+    click.echo(json.dumps(model.to_dict(), indent=2))
+
+
+@cli.command("openapi")
+@click.argument("project_dir", type=click.Path(exists=True), required=False)
+@click.option("--title", default="Reverse Engineered API", help="OpenAPI title.")
+@click.option("--no-redact", is_flag=True, default=False, help="Include observed sensitive values.")
+def openapi_cmd(project_dir: str | None, title: str, no_redact: bool):
+    """Generate OpenAPI 3.1 JSON from project captures."""
+    from apiregen.api_model import build_api_model, generate_openapi, redact_model
+
+    model = build_api_model(_load_project_entries(project_dir))
+    if not no_redact:
+        model = redact_model(model)
+    click.echo(json.dumps(generate_openapi(model, title=title), indent=2))
+
+
+@cli.command("asyncapi")
+@click.argument("project_dir", type=click.Path(exists=True), required=False)
+@click.option("--title", default="Reverse Engineered Streaming API", help="AsyncAPI title.")
+@click.option("--no-redact", is_flag=True, default=False, help="Include observed sensitive values.")
+def asyncapi_cmd(project_dir: str | None, title: str, no_redact: bool):
+    """Generate AsyncAPI 3.0 JSON from project captures."""
+    from apiregen.api_model import build_api_model, generate_asyncapi, redact_model
+
+    model = build_api_model(_load_project_entries(project_dir))
+    if not no_redact:
+        model = redact_model(model)
+    click.echo(json.dumps(generate_asyncapi(model, title=title), indent=2))
+
+
+@cli.command("replay")
+@click.argument("project_dir", type=click.Path(exists=True))
+@click.argument("index", type=int)
+@click.option("--no-redact", is_flag=True, default=False, help="Include observed sensitive values.")
+def replay_cmd(project_dir: str, index: int, no_redact: bool):
+    """Generate a replayable curl command for a captured request index."""
+    from apiregen.api_model import replay_curl
+
+    entries = _load_project_entries(project_dir)
+    if index < 0 or index >= len(entries):
+        console.print(f"[red]Invalid index {index}. Valid range: 0-{len(entries) - 1}[/red]")
+        raise SystemExit(1)
+
+    entry = entries[index]
+    click.echo(
+        json.dumps(
+            {
+                "index": index,
+                "url": entry.url[:300],
+                "method": entry.method,
+                "redacted": not no_redact,
+                "curl": replay_curl(entry, redact=not no_redact),
+            },
+            indent=2,
+        )
+    )

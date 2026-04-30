@@ -132,7 +132,7 @@ Document any findings:
 ### 9. Recommended Next Steps
 - Which endpoints to focus on in Phase 2 (Mapping)
 - Whether additional captures are needed
-- Which specialist agent (rest-api-specialist, graphql-specialist, websocket-specialist) is best suited for the detected API style
+- Which specialist agents are best suited for the detected API style and transport framework
 - Any early warnings about feasibility
 
 Format the document clearly with markdown headers and tables. Save the document to `.apiregen/reports/page-context.md`. This document will be referenced in all subsequent phases.
@@ -144,5 +144,9 @@ After the Page Context Document is written, dispatch the appropriate specialist(
 - **`rest-api-specialist`** — invoke when versioned REST paths (`/api/v1/`, `/rest/`), REST envelopes (`{data, meta}`), pagination params (offset/limit/cursor), Bearer/API-key auth, or REST client libraries (axios, fetch, Retrofit, OkHttp) are detected.
 - **`graphql-specialist`** — invoke when a `/graphql` endpoint accepting `{query, variables}`, GraphQL operation strings (`query`/`mutation`/`subscription`), AST literals in JS bundles, persisted-query fields (`documentId`, `sha256Hash`), or Apollo/Relay/urql client signatures are detected.
 - **`websocket-specialist`** — invoke when WebSocket upgrade handshakes, `ws://`/`wss://` URLs, graphql-ws / socket.io / SignalR / STOMP / MQTT signatures, binary frame handling (Protobuf/MessagePack), or real-time data (live odds, live scores, chat, streams) are detected.
+- **`grpc-transport-specialist`** — invoke when gRPC, gRPC-Web, Connect, Twirp, Protobuf-over-HTTP, service/method paths, `grpc-status`, `grpc-timeout`, `connect-protocol-version`, or generated Protobuf clients are detected.
+- **`realtime-framework-specialist`** — invoke when Socket.IO, SignalR, STOMP, MQTT-over-WebSocket, Phoenix Channels, Pusher, Ably, Centrifugo, Mercure, SSE/EventSource, or long-polling fallback patterns are detected.
+- **`rpc-transport-specialist`** — invoke when JSON-RPC, tRPC, XML-RPC, SOAP, OData actions/functions, batch endpoints, or custom command/action envelopes are detected.
+- **`mobile-transport-specialist`** — invoke for APK/mobile app targets or when OkHttp, Retrofit, Volley, Ktor, URLSession, Alamofire, Moya, native interceptors, certificate pinning, attestation, or mobile-only headers are detected.
 
 Pass each specialist the path to the saved Page Context Document and the relevant HAR path so it can continue from the recon findings without repeating discovery work.
